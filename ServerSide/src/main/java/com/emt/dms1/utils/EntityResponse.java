@@ -19,4 +19,7 @@ public class EntityResponse<T> {
     private HttpHeaders headers;
     private long contentLength;
     private Resource body;
+
+    public void setEntity(String redirectPage) {
+    }
 }

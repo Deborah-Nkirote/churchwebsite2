@@ -15,8 +15,8 @@ public class Events {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column
-    private String Name;
+    @Column(name = "eventName", nullable = false)
+    private String eventName;
     @Column
    // private String ImageUrl;
     private boolean deleted = false;

@@ -15,9 +15,10 @@ import lombok.NoArgsConstructor;
 public class churchLeaders {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-    @Column
-    private String Name;
+    private Long id;
+
+    @Column(name = "name", nullable = false)
+    private String leadername;
     @Column
     private String Designation;
     @Column

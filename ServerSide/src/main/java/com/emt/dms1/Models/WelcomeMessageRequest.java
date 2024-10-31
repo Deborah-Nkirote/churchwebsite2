@@ -1,9 +1,6 @@
 package com.emt.dms1.Models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Data
@@ -13,8 +10,10 @@ public class WelcomeMessageRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id ;
+    @Column(name = "welcome_message", nullable = false)
     private String message;
-
+    @Column
+    private String liveStreamUrl;
     // Getters and setters
 }
 
