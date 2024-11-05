@@ -50,6 +50,7 @@ public class SecurityConfig {
                                 .permitAll()
                                 .anyRequest()
                                 .authenticated()
+
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .authenticationProvider(authenticationProvider)
@@ -62,4 +63,5 @@ public class SecurityConfig {
 
         return http.build();
     }
+
 }

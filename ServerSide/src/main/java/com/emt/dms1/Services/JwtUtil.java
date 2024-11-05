@@ -20,7 +20,7 @@ public class JwtUtil {
     }
 
     // Method to generate a password reset token
-    public String generatePasswordResetToken(String username) {
+    public String generatePasswordResetToken(String username, Long id) {
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())

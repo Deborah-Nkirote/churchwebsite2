@@ -1,33 +1,24 @@
 package com.emt.dms1.Models;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Entity
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Table(name = "password_reset_tokens")
 public class PasswordResetToken {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false, unique = true)
     private String token;
 
-    @OneToOne(targetEntity = UserModel.class, optional = false)
-    @JoinColumn(nullable = false, name = "user_id")
-    private UserModel user;
+    @Column(unique = true)
+    private Long userId;
 
-    private LocalDateTime ExpirationDate;
-    public boolean isExpired() {
-        return LocalDateTime.now().isAfter(ExpirationDate);
-    }
+    private Date createdAt;
+    private Date updatedAt;
+
+    // Getters and setters
 }

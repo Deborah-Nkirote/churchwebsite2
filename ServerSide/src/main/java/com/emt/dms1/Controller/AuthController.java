@@ -1,8 +1,9 @@
 package com.emt.dms1.Controller;
 
 import com.emt.dms1.Models.AuthenticationRequest;
+import com.emt.dms1.Models.ForgotPasswordRequest;
+import com.emt.dms1.Models.UserModel;
 import com.emt.dms1.Services.AdminService;
-import com.emt.dms1.Services.RegisterRequest;
 import com.emt.dms1.utils.EntityResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,7 +22,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public EntityResponse register(@RequestBody RegisterRequest request) {
+    public EntityResponse register(@RequestBody UserModel.RegisterRequest request) {
         return adminService.register(request);
     }
 
@@ -51,14 +52,8 @@ public ResponseEntity<EntityResponse<String>> changePassword(
     return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatusCode()));
 }
 
-// Endpoint to request a password reset (when the user forgets the password)
-@PostMapping("/forgot-password")
-public ResponseEntity<EntityResponse<String>> requestPasswordReset(@RequestParam("email") String email) {
-    EntityResponse<String> response = adminService.requestPasswordReset(email);
-    return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatusCode()));
-}
 
-// Endpoint to reset password using the token sent to the user's email
+
 @PostMapping("/reset-password")
 public ResponseEntity<EntityResponse<String>> resetPassword(
         @RequestParam("token") String token,
@@ -67,6 +62,11 @@ public ResponseEntity<EntityResponse<String>> resetPassword(
     EntityResponse<String> response = adminService.resetPassword(token, newPassword);
     return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatusCode()));
 }
+    @PostMapping("/forgot-password")
+    public EntityResponse<String> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        // Call the service method to handle the forgot password functionality
+        return adminService.handleForgotPassword(request);
+    }
 
 // Endpoint to log the user out
 @PostMapping("/logout")

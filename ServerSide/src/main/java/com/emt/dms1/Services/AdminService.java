@@ -6,7 +6,6 @@ import com.emt.dms1.Repository.*;
 import com.emt.dms1.utils.EntityResponse;
 
 
-import java.time.LocalDateTime;
 import java.util.*;
 
 import com.emt.dms1.utils.JwtUtils;
@@ -22,10 +21,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
 
-import org.springframework.mail.SimpleMailMessage;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -39,8 +37,6 @@ import javax.crypto.SecretKey;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.time.LocalDate;
-
-import static com.emt.dms1.Models.Role.ROLE_USER;
 
 
 @Slf4j
@@ -56,6 +52,7 @@ public class AdminService {
     @Autowired
     private UserRepository userRepository;
     private  EmailService emailService;
+    private JwtUtil jwtUtil;
     private PrayerRequestRepository prayerRequestRepository;
     @Autowired
     private UserInterestRepository userInterestRepository;
@@ -87,7 +84,7 @@ public class AdminService {
         this.attendanceRecordRepository=attendanceRecordRepository;
         this.mailSender = mailSender;
         this.emailService=emailService;
-        this.secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+               this.secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
     }
 
 
@@ -618,7 +615,7 @@ public class AdminService {
         return response;
     }
 
-    public EntityResponse register(RegisterRequest request) {
+    public EntityResponse register(UserModel.RegisterRequest request) {
         EntityResponse entityResponse = new EntityResponse<>();
 
         try {
@@ -634,7 +631,7 @@ public class AdminService {
                     .email(request.getEmailAddress())
                     .password(passwordEncoder.encode(request.getPassword())) // Encrypt the password
                     .phoneNumber(Long.valueOf(request.getPhoneNumber()))
-                    .role(ROLE_USER)  // Default role
+
                     .build();
 
             adminRepository.save(user);
@@ -709,7 +706,7 @@ public class AdminService {
             }
 
             UserModel userModel = existingUser.get();
-            userModel.setRole(Role.ROLE_ADMIN);  // Set role to admin
+             // Set role to admin
             adminRepository.save(userModel);
 
             log.info("User role updated to admin for email: {}", email);
@@ -910,41 +907,44 @@ public class AdminService {
         return entityResponse;
     }
 
-    public EntityResponse<String> requestPasswordReset(String email) {
+    public EntityResponse<String> handleForgotPassword(ForgotPasswordRequest request) {
         EntityResponse<String> entityResponse = new EntityResponse<>();
+        String email = request.getEmail();
 
-        // Check if the email exists in the database
-        Optional<UserModel> userOptional = userRepository.findByEmail(email);
-        if (!userOptional.isPresent()) {
+        // Find the user by email
+        UserModel user = findByEmail(email);
+        if (user == null) {
             entityResponse.setStatusCode(HttpStatus.BAD_REQUEST.value());
-            entityResponse.setMessage("Email does not exist");
+            entityResponse.setMessage("User not found");
             return entityResponse;
         }
 
-        // Proceed with generating the reset token and sending email
-        String token = generatePasswordResetToken(email); // Ensure this method exists
+        // Generate a unique token
+        String token = generateToken(user);
 
-        // Send email with the reset token
-        try {
-            emailService.sendPasswordResetToken(email, token);
-            entityResponse.setStatusCode(HttpStatus.OK.value());
-            entityResponse.setMessage("Password reset token sent to email");
-        } catch (Exception e) {
-            entityResponse.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            entityResponse.setMessage("Failed to send email: " + e.getMessage());
-        }
+        // Send password reset email with the generated token
+        emailService.sendPasswordResetEmail(user, token);
+
+        // Set success response
+        entityResponse.setStatusCode(HttpStatus.OK.value());
+        entityResponse.setMessage("Password reset link sent to your email");
 
         return entityResponse;
     }
 
-    // Method to generate password reset token
-    public String generatePasswordResetToken(String email) {
-        return Jwts.builder()
-                .setSubject(email)
-                .setExpiration(new Date(System.currentTimeMillis() + 3600000)) // 1 hour expiration
-                .signWith(secretKey, SignatureAlgorithm.HS512)
-                .compact();
+    private UserModel findByEmail(String email) {
+        return userRepository.findByEmail(email).orElse(null);
     }
+
+
+
+    // Method to generate password reset token
+    private String generateToken(UserModel userModel) {
+        UUID uuid = UUID.randomUUID();
+        return jwtUtil.generatePasswordResetToken(uuid.toString(), userModel.getId());
+    }
+
+
 
 
 

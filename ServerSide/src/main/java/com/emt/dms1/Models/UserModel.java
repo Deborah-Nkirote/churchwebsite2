@@ -27,10 +27,23 @@ public class UserModel {
     @Column(name = "email", unique = true, nullable = false)
     private String email;
 
-    @Enumerated(EnumType.STRING)
-    private Role role;
+
 
     private String password;
     private Long phoneNumber;
 
-                                      }
+    @Data
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class RegisterRequest {
+
+        private String username;
+        private String emailAddress;
+        private String password;
+        private String phoneNumber;
+
+
+
+    }
+}
